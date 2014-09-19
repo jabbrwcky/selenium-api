@@ -1,0 +1,16 @@
+apply plugin: 'java'
+
+version = '0.1'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+  compile 'org.seleniumhq.selenium:selenium-server:2.42.2'
+	testCompile 'junit:junit:4.11'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.1'
+}
