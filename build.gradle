@@ -1,5 +1,21 @@
 apply plugin: 'java'
 
+buildscript {
+    repositories {
+        maven { url 'http://repo.spring.io/plugins-release' }
+        jcenter() }
+    dependencies {
+        classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+    }
+}
+
+apply plugin: 'fatjar'
+apply plugin: 'propdeps'
+apply plugin: 'propdeps-maven'
+apply plugin: 'propdeps-idea'
+apply plugin: 'propdeps-eclipse'
+
 version = '0.1'
 
 repositories {
@@ -7,10 +23,11 @@ repositories {
 }
 
 dependencies {
-  compile 'org.seleniumhq.selenium:selenium-server:2.42.2'
-	testCompile 'junit:junit:4.11'
+  provided 'org.seleniumhq.selenium:selenium-server:2.42.2'
+  testCompile 'junit:junit:4.11'
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.1'
+    distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip";
 }
