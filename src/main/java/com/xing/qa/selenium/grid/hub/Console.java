@@ -28,6 +28,10 @@ public class Console extends RegistryBasedServlet {
     private String coreVersion;
     private String coreRevision;
 
+    public Console() {
+        this(null);
+    }
+
     public Console(Registry registry) {
         super(registry);
         getVersion();
@@ -35,7 +39,6 @@ public class Console extends RegistryBasedServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doGet(req, resp);
         if ("application/json".equals(req.getHeader("Accept"))) {
             processApi(req, resp);
         } else {

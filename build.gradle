@@ -18,12 +18,15 @@ apply plugin: 'propdeps-eclipse'
 
 version = '0.1'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 repositories {
 	mavenCentral()
 }
 
 dependencies {
-  provided 'org.seleniumhq.selenium:selenium-server:2.42.2'
+  compile 'org.seleniumhq.selenium:selenium-server:2.43.0'
   testCompile 'junit:junit:4.11'
 }
 
