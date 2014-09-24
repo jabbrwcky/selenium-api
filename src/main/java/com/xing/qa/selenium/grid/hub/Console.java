@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.grid.internal.Registry;
 import org.openqa.grid.internal.RemoteProxy;
+import org.openqa.grid.web.Hub;
 import org.openqa.grid.web.servlet.RegistryBasedServlet;
 
 import javax.servlet.ServletException;
@@ -18,7 +19,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
- * Console
+ * Console information nad more as JSON
  *
  * @author Jens Hausherr (jens.hausherr@xing.com)
  */
@@ -50,9 +51,12 @@ public class Console extends RegistryBasedServlet {
             throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
+
         try {
             JSONObject status = new JSONObject();
-            status.put("version", coreVersion + coreRevision);
+
+            Hub h = getRegistry().getHub();
+
             List<JSONObject> nodes = new ArrayList<JSONObject>();
 
             for (RemoteProxy proxy : getRegistry().getAllProxies()) {
@@ -60,7 +64,13 @@ public class Console extends RegistryBasedServlet {
                 nodes.add(beta.render());
             }
 
+            status.put("version", coreVersion + coreRevision);
+            status.put("configuration", getRegistry().getConfiguration().getAllParams());
+            status.put("host", h.getHost());
+            status.put("port", h.getPort());
+            status.put("registration_url", h.getRegistrationURL());
             status.put("nodes", nodes);
+
             response.setStatus(200);
             Writer w = response.getWriter();
             status.write(w);

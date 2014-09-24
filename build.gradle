@@ -1,21 +1,5 @@
 apply plugin: 'java'
 
-buildscript {
-    repositories {
-        maven { url 'http://repo.spring.io/plugins-release' }
-        jcenter() }
-    dependencies {
-        classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
-        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
-    }
-}
-
-apply plugin: 'fatjar'
-apply plugin: 'propdeps'
-apply plugin: 'propdeps-maven'
-apply plugin: 'propdeps-idea'
-apply plugin: 'propdeps-eclipse'
-
 version = '0.1'
 
 sourceCompatibility = 1.7
@@ -25,9 +9,28 @@ repositories {
 	mavenCentral()
 }
 
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
 dependencies {
-  compile 'org.seleniumhq.selenium:selenium-server:2.43.0'
+  provided 'org.seleniumhq.selenium:selenium-server:2.43.0'
+  //compile 'com.github.spullara.mustache.java:compiler:0.8.16'
   testCompile 'junit:junit:4.11'
+}
+
+jar {
+    dependsOn configurations.runtime
+    from {
+        (configurations.runtime - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
 }
 
 task wrapper(type: Wrapper) {

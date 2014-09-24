@@ -67,7 +67,7 @@ public class WebProxyJsonRenderer implements JSONRenderer {
     if (wdLines.getLinesType().size() != 0) {
       JSONObject prot = new JSONObject();
       prot.put("name",  SeleniumProtocol.WebDriver);
-      prot.put("browsers", getLines(rcLines));
+      prot.put("browsers", getLines(wdLines));
       protocols.put("web_driver",prot);
     }
 
