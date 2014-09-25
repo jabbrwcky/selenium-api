@@ -6,6 +6,7 @@ import org.openqa.grid.internal.Registry;
 import org.openqa.grid.internal.RemoteProxy;
 import org.openqa.grid.web.Hub;
 import org.openqa.grid.web.servlet.RegistryBasedServlet;
+import org.openqa.selenium.Capabilities;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -13,9 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -40,19 +40,69 @@ public class Console extends RegistryBasedServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if ("application/json".equals(req.getHeader("Accept"))) {
-            processApi(req, resp);
-        } else {
-            resp.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Only 'application/json' supported!");
+        try {
+            if ("/requests".equals(req.getPathInfo())) {
+                sendJson(pendingRequests(), req, resp);
+            } else {
+                sendJson(status(), req, resp);
+            }
+        } catch (JSONException je) {
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.setStatus(500);
+            JSONObject error = new JSONObject();
+
+            try {
+                error.put("message", je.getMessage());
+                error.put("location", je.getStackTrace());
+                error.write(resp.getWriter());
+            } catch (JSONException e1) {
+              log.log(Level.WARNING, "Failed to write error response", e1);
+            }
+
+        }
+
+    }
+
+    protected void sendJson(JSONObject jo, HttpServletRequest req, HttpServletResponse resp) {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setStatus(200);
+        Writer w = null;
+        try {
+            w = resp.getWriter();
+            jo.write(w);
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Error writing response", e);
+        } catch (JSONException e) {
+            log.log(Level.WARNING, "Failed to serialize JSON response", e);
         }
     }
 
-    protected void processApi(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+    protected JSONObject pendingRequests() throws JSONException {
+        JSONObject pending = new JSONObject();
+        int p = getRegistry().getNewSessionRequestCount();
+        int to = getRegistry().getNewSessionWaitTimeout();
+        List<Map<String,?>> desired;
 
-        try {
+        if (p > 0) {
+            desired = new ArrayList<Map<String, ?>>();
+            for (Capabilities c: getRegistry().getDesiredCapabilities()) {
+                desired.add(c.asMap());
+            }
+        } else {
+            desired = Collections.emptyList();
+        }
+
+        pending.put("pending", p);
+        pending.put("requested_capabilities", desired);
+        pending.put("timeout", to);
+
+        return pending;
+    }
+
+    protected JSONObject status()
+            throws JSONException {
             JSONObject status = new JSONObject();
 
             Hub h = getRegistry().getHub();
@@ -70,21 +120,9 @@ public class Console extends RegistryBasedServlet {
             status.put("port", h.getPort());
             status.put("registration_url", h.getRegistrationURL());
             status.put("nodes", nodes);
+            status.put("requests", pendingRequests());
 
-            response.setStatus(200);
-            Writer w = response.getWriter();
-            status.write(w);
-        } catch (JSONException e) {
-            response.setStatus(500);
-            JSONObject error = new JSONObject();
-            try {
-                error.put("message", e.getMessage());
-                error.put("location", e.getStackTrace());
-                error.write(response.getWriter());
-            } catch (JSONException e1) {
-                e1.printStackTrace();
-            }
-        }
+            return status;
     }
 
     private void getVersion() {
