@@ -1,6 +1,7 @@
 apply plugin: 'java'
 
-version = '0.1'
+version = '0.1.1'
+group = 'com.xing.qa'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -17,7 +18,7 @@ configurations {
 dependencies {
   provided 'org.seleniumhq.selenium:selenium-server:2.43.0'
   //compile 'com.github.spullara.mustache.java:compiler:0.8.16'
-  testCompile 'junit:junit:4.11'
+  testCompile 'org.testng:testng:6.8.8'
 }
 
 jar {
