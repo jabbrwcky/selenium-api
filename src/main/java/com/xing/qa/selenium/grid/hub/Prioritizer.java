@@ -13,13 +13,15 @@ public class Prioritizer implements org.openqa.grid.internal.listeners.Prioritiz
 
     @Override
     public int compareTo(Map<String, Object> a, Map<String, Object> b) {
-        boolean ciA = a.containsKey(CI);
-        boolean ciB = b.containsKey(CI);
+        double scoreA = new PriorityScore(a).score();
+        double scoreB = new PriorityScore(b).score();
 
-        if (ciA && !ciB) {
+        double diff = scoreA - scoreB;
+
+        if (diff > 0)
             return -1;
-        } else if ( ciB && !ciA) {
+        else if (diff < 0 )
             return 1;
-        } else return 0;
+        else return 0;
     }
 }

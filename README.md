@@ -26,7 +26,13 @@ A call to http://localhost:4444/grid/admin/Console will return a full status rep
  
 ### Detail requests
 
-The call `http://localhost:4444/grid/admin/Console/requests` will just return a list of the pending requests of the 
+The call `http://localhost:4444/grid/admin/Console/requests` will just return a list of the pending requests of the connected nodes.
+
+Monitoring
+----------
+
+When a node is not started with the default class `DefaultRemoteProxy` but with `com.xing.qa.selenium.grid.node.MonitoringWebProxy`
+it will report metrics on the operating system and node operation to a InfluxDB server.
 
  
 
