@@ -1,8 +1,5 @@
 package com.xing.qa.selenium.grid.node;
 
-import com.xing.qa.selenium.grid.reporter.MemoryAndCpuReporter;
-import org.hyperic.sigar.Sigar;
-import org.hyperic.sigar.SigarException;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Serie;
@@ -35,53 +32,28 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
 
     public static final String DATABASE = "selenium-grid";
 
-    private final Logger log = Logger.getLogger(getClass().getName());
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(64);
 
-    private final ScheduledExecutorService executor;
+    private static final InfluxDB influxDB  = InfluxDBFactory.connect(
+            format("http://%s:%s", envOr("IFXDB_HOST", "localhost"), envOr("IFXDB_PORT", "8086")),
+            envOr("IFXDB_USER", "root"),
+            envOr("IFXDB_PASSWD", "root"));
 
-    private final InfluxDB influxDB;
-
-    private final Sigar systemMonitor;
-
-    private String fqdn;
-
-    private ScheduledFuture<?> systemReporter;
-    private ScheduledFuture<?> nodeReporter;
-
-    public MonitoringWebProxy(RegistrationRequest request, Registry registry) {
-        super(request, registry);
-
-        executor = Executors.newScheduledThreadPool(32);
-
-        influxDB = InfluxDBFactory.connect(
-                format("http://%s:%s", envOr("IFXDB_HOST", "localhost"), envOr("IFXDB_PORT", "8086")),
-                envOr("IFXDB_USER", "root"),
-                envOr("IFXDB_PASSWD", "root"));
-
-        systemMonitor = new Sigar();
-
-        try {
-            fqdn = systemMonitor.getFQDN();
-        } catch (SigarException e) {
-            log.warning("Could not determine host name.");
-        }
-
-        startEnvMonitoring();
-        startNodeMonitoring();
-    }
-
-    private void startNodeMonitoring() {
-        nodeReporter = executor.scheduleAtFixedRate(new NodeReporter(), 0, 10, TimeUnit.SECONDS);
-    }
-
-    private void startEnvMonitoring() {
-        systemReporter = executor.scheduleAtFixedRate(new MemoryAndCpuReporter(systemMonitor, influxDB), 0, 10, TimeUnit.SECONDS);
-    }
-
-    private String envOr(String envVar, String defaultVal) {
+    private static String envOr(String envVar, String defaultVal) {
         String val = System.getenv(envVar);
         if (val == null) return defaultVal;
         return val;
+    }
+
+    private final Logger log = Logger.getLogger(getClass().getName());
+
+    private ScheduledFuture<?> nodeReporter;
+    private String name;
+
+    public MonitoringWebProxy(RegistrationRequest request, Registry registry) {
+        super(request, registry);
+        this.name = request.getName();
+        nodeReporter = executor.scheduleAtFixedRate(new NodeReporter(), 0, 10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -155,7 +127,7 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
             }
 
             List<String> values = new ArrayList<String>(Arrays.asList(
-                    fqdn,
+                    name,
                     session.getExternalKey().getKey(),
                     session.getInternalKey(),
                     String.valueOf(session.isForwardingRequest()),
@@ -180,7 +152,6 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
                     .columns(columns.toArray(new String[columns.size()]))
                     .values(values.toArray())
                     .build();
-
             influxDB.write(DATABASE, TimeUnit.MILLISECONDS, s);
         }
 
@@ -190,21 +161,12 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
 
         @Override
         public void run() {
-            String fqdn;
-            try {
-                fqdn = systemMonitor.getFQDN();
-
                 int used = getTotalUsed();
                 int total = getMaxNumberOfConcurrentTestSessions();
                 double usage = (double) used / (double) total;
                 Serie load = new Serie.Builder(SerieNames.utilization.toString())
-                        .columns("host", "used", "total", "pct").values(fqdn, used, total, usage).build();
-
+                        .columns("host", "used", "total", "pct").values(name, used, total, usage).build();
                 influxDB.write(DATABASE, TimeUnit.MILLISECONDS, load);
-
-            } catch (SigarException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -219,9 +181,10 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
         public void run() {
             Serie exRep = new Serie.Builder(SerieNames.node_errors.toString())
                     .columns("host", "error", "message")
-                    .values(fqdn, exception.getClass().getName(), exception.getMessage()).build();
+                    .values(name, exception.getClass().getName(), exception.getMessage()).build();
             influxDB.write(DATABASE, TimeUnit.MILLISECONDS, exRep);
         }
+
     }
 
     private class CommandReporter implements Runnable {
@@ -252,7 +215,7 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
                             "cmd_action"
                             )
                     .values(
-                            fqdn,
+                            name,
                             session.getExternalKey().getKey(),
                             session.getInternalKey(),
                             String.valueOf(session.isForwardingRequest()),
@@ -262,8 +225,12 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
                             request.getPathInfo()
                     )
                     .build();
-
             influxDB.write(DATABASE, TimeUnit.MILLISECONDS, s);
         }
+    }
+
+    @Override
+    public void teardown() {
+        nodeReporter.cancel(false);
     }
 }
