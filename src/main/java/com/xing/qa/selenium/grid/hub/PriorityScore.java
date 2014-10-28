@@ -11,6 +11,8 @@ public class PriorityScore {
 
     private final Map<String, Object> caps;
 
+    public static final String CI = "_CI";
+
     public PriorityScore(Map<String, Object> capabilities) {
         this.caps = capabilities;
     }
@@ -24,7 +26,7 @@ public class PriorityScore {
     }
 
     private double addCIPriority(double score) {
-        if (caps.containsKey("ci")) {
+        if (caps.containsKey(CI)) {
             return score + 100;
         } else {
             return score;

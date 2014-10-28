@@ -9,8 +9,6 @@ import java.util.Map;
  */
 public class Prioritizer implements org.openqa.grid.internal.listeners.Prioritizer {
 
-    private static final String CI = "ci";
-
     @Override
     public int compareTo(Map<String, Object> a, Map<String, Object> b) {
         double scoreA = new PriorityScore(a).score();

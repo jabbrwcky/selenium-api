@@ -1,0 +1,3 @@
+rvm: com.xing.qa.selenium.grid.hub.capmat.RubyVersionMatcher
+platform: com.xing.qa.selenium.grid.hub.capmat.PlatformMatcher
+exact: com.xing.qa.selenium.grid.hub.capmat.ExactMatcher

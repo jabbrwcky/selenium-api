@@ -18,7 +18,7 @@ public class PrioritizerTest {
     @Test
     public void testPriorityResolution() {
         Map<String, Object> a = new HashMap<String, Object>();
-        a.put("ci", Boolean.TRUE);
+        a.put("_CI", Boolean.TRUE);
         Map<String, Object> b = new HashMap<String, Object>();
 
         Assert.assertEquals(sut.compareTo(a, b), -1);
