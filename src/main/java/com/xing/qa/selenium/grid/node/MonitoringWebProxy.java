@@ -11,8 +11,6 @@ import org.openqa.grid.selenium.proxy.DefaultRemoteProxy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -30,11 +28,11 @@ import static java.lang.String.format;
  */
 public class MonitoringWebProxy extends DefaultRemoteProxy {
 
-    public static final String DATABASE = "selenium-grid";
+    private static final String DATABASE = envOr("IFXDB_DB", "selenium-grid");
 
-    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(64);
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(64);
 
-    private static final InfluxDB influxDB  = InfluxDBFactory.connect(
+    private static final InfluxDB INFLUX_DB = InfluxDBFactory.connect(
             format("http://%s:%s", envOr("IFXDB_HOST", "localhost"), envOr("IFXDB_PORT", "8086")),
             envOr("IFXDB_USER", "root"),
             envOr("IFXDB_PASSWD", "root"));
@@ -53,25 +51,25 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
     public MonitoringWebProxy(RegistrationRequest request, Registry registry) {
         super(request, registry);
         this.name = request.getName();
-        nodeReporter = executor.scheduleAtFixedRate(new NodeReporter(), 0, 10, TimeUnit.SECONDS);
+        nodeReporter = EXECUTOR.scheduleAtFixedRate(new NodeReporter(), 0, 10, TimeUnit.SECONDS);
     }
 
     @Override
     public void beforeSession(TestSession session) {
-        executor.execute(new SessionReporter(session, ReportType.start));
+        EXECUTOR.execute(new SessionReporter(session, ReportType.start));
         super.beforeSession(session);
     }
 
     @Override
     public void afterSession(TestSession session) {
         super.afterSession(session);
-        executor.execute(new SessionReporter(session, ReportType.finish));
+        EXECUTOR.execute(new SessionReporter(session, ReportType.finish));
     }
 
     @Override
     public void onEvent(List<RemoteException> events, RemoteException lastInserted) {
         super.onEvent(events, lastInserted);
-        executor.execute(new ErrorReporter(lastInserted));
+        EXECUTOR.execute(new ErrorReporter(lastInserted));
     }
 
     @Override
@@ -86,20 +84,20 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
 
     @Override
     public void afterCommand(TestSession session, HttpServletRequest request, HttpServletResponse response) {
-        executor.execute(new CommandReporter(session, request, response, ReportType.result));
+        EXECUTOR.execute(new CommandReporter(session, request, response, ReportType.result));
         super.afterCommand(session, request, response);
     }
 
     @Override
     public void beforeCommand(TestSession session, HttpServletRequest request, HttpServletResponse response) {
-        executor.execute(new CommandReporter(session, request, response, ReportType.command));
+        EXECUTOR.execute(new CommandReporter(session, request, response, ReportType.command));
         super.beforeCommand(session, request, response);
     }
 
     @Override
     public void beforeRelease(TestSession session) {
         super.beforeRelease(session);
-        executor.execute(new SessionReporter(session, ReportType.timeout));
+        EXECUTOR.execute(new SessionReporter(session, ReportType.timeout));
     }
 
     private class SessionReporter implements Runnable {
@@ -113,46 +111,74 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
 
         @Override
         public void run() {
-            List<String> columns = new ArrayList<String>(Arrays.asList(
-                    "host",
-                    type.toString(),
-                    "ext_key",
-                    "int_key",
-                    "forwarding",
-                    "orphaned",
-                    "inactivity"));
+            Serie.Builder srep = new Serie.Builder(format("session.%s.event.%s.measure", session.getExternalKey().getKey(), type));
 
-            if (ReportType.timeout == type) {
-                columns.add("browser_starting");
+            if (ReportType.timeout != type) {
+                srep.columns(
+                        "host",
+                        type.toString(),
+                        "ext_key",
+                        "int_key",
+                        "forwarding",
+                        "orphaned",
+                        "inactivity"
+                );
+                srep.values(
+                        name,
+                        session.getExternalKey().getKey(),
+                        session.getInternalKey(),
+                        String.valueOf(session.isForwardingRequest()),
+                        String.valueOf(session.isOrphaned()),
+                        String.valueOf(session.getInactivityTime())
+                );
+            } else {
+                srep.columns("host",
+                        type.toString(),
+                        "ext_key",
+                        "int_key",
+                        "forwarding",
+                        "orphaned",
+                        "inactivity",
+                        "browser_starting");
+                srep.values(
+                        name,
+                        session.getExternalKey().getKey(),
+                        session.getInternalKey(),
+                        String.valueOf(session.isForwardingRequest()),
+                        String.valueOf(session.isOrphaned()),
+                        String.valueOf(session.getInactivityTime()),
+                        String.valueOf(session.getInternalKey() == null)
+                );
             }
 
-            List<String> values = new ArrayList<String>(Arrays.asList(
-                    name,
-                    session.getExternalKey().getKey(),
-                    session.getInternalKey(),
-                    String.valueOf(session.isForwardingRequest()),
-                    String.valueOf(session.isOrphaned()),
-                    String.valueOf(session.getInactivityTime())));
+            Serie.Builder req = new Serie.Builder(
+                    format("session.%s.cap.requested.%s.measure", session.getExternalKey().getKey(), type));
+            req.columns("host", "ext_key", "int_key", "session", "forwarding", "orphan", "inactivity", "capability", "val");
 
-            if (ReportType.timeout == type) {
-                values.add(String.valueOf(session.getInternalKey() == null));
-            }
+            Serie.Builder prov = new Serie.Builder(format("session.%s.cap.provided.%s.measure", session.getExternalKey().getKey(), type));
+            prov.columns("host", "ext_key", "int_key", "session", "forwarding", "orphan", "inactivity", "capability", "val");
 
             for (Map.Entry<String, Object> scap : session.getSlot().getCapabilities().entrySet()) {
-                columns.add("nod_" + scap.getKey());
-                values.add(String.valueOf(scap.getValue()));
+                prov.values(name, session.getExternalKey().getKey(),
+                        session.getInternalKey(),
+                        String.valueOf(session.isForwardingRequest()),
+                        String.valueOf(session.isOrphaned()),
+                        String.valueOf(session.getInactivityTime()),
+                        scap.getKey(),
+                        String.valueOf(scap.getValue()));
             }
 
             for (Map.Entry<String, Object> rcap : session.getRequestedCapabilities().entrySet()) {
-                columns.add("req_" + rcap.getKey());
-                values.add(String.valueOf(rcap.getValue()));
+                req.values(name, session.getExternalKey().getKey(),
+                        session.getInternalKey(),
+                        String.valueOf(session.isForwardingRequest()),
+                        String.valueOf(session.isOrphaned()),
+                        String.valueOf(session.getInactivityTime()),
+                        rcap.getKey(),
+                        String.valueOf(rcap.getValue()));
             }
 
-            Serie s = new Serie.Builder(SerieNames.session.toString())
-                    .columns(columns.toArray(new String[columns.size()]))
-                    .values(values.toArray())
-                    .build();
-            influxDB.write(DATABASE, TimeUnit.MILLISECONDS, s);
+            INFLUX_DB.write(DATABASE, TimeUnit.MILLISECONDS, srep.build(), req.build(), prov.build());
         }
 
     }
@@ -161,12 +187,11 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
 
         @Override
         public void run() {
-                int used = getTotalUsed();
-                int total = getMaxNumberOfConcurrentTestSessions();
-                double usage = (double) used / (double) total;
-                Serie load = new Serie.Builder(SerieNames.utilization.toString())
-                        .columns("host", "used", "total", "pct").values(name, used, total, usage).build();
-                influxDB.write(DATABASE, TimeUnit.MILLISECONDS, load);
+            int used = getTotalUsed();
+            int total = getMaxNumberOfConcurrentTestSessions();
+            Serie load = new Serie.Builder(String.format("node.%s.measure", SerieNames.utilization))
+                    .columns("host", "used", "total").values(name, used, total).build();
+            INFLUX_DB.write(DATABASE, TimeUnit.MILLISECONDS, load);
         }
     }
 
@@ -182,7 +207,7 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
             Serie exRep = new Serie.Builder(SerieNames.node_errors.toString())
                     .columns("host", "error", "message")
                     .values(name, exception.getClass().getName(), exception.getMessage()).build();
-            influxDB.write(DATABASE, TimeUnit.MILLISECONDS, exRep);
+            INFLUX_DB.write(DATABASE, TimeUnit.MILLISECONDS, exRep);
         }
 
     }
@@ -194,15 +219,15 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
         private final ReportType type;
 
         public CommandReporter(TestSession session, HttpServletRequest request, HttpServletResponse response, ReportType type) {
-            this.session=session;
-            this.request=request;
-            this.response=response;
-            this.type=type;
+            this.session = session;
+            this.request = request;
+            this.response = response;
+            this.type = type;
         }
 
         @Override
         public void run() {
-            Serie s = new Serie.Builder(SerieNames.session.toString())
+            Serie s = new Serie.Builder(String.format("session.%s.command.%s.measure", session.getExternalKey().getKey(), type))
                     .columns(
                             "host",
                             type.toString(),
@@ -213,7 +238,7 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
                             "inactivity",
                             "cmd_method",
                             "cmd_action"
-                            )
+                    )
                     .values(
                             name,
                             session.getExternalKey().getKey(),
@@ -225,7 +250,7 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
                             request.getPathInfo()
                     )
                     .build();
-            influxDB.write(DATABASE, TimeUnit.MILLISECONDS, s);
+            INFLUX_DB.write(DATABASE, TimeUnit.MILLISECONDS, s);
         }
     }
 

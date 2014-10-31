@@ -8,5 +8,6 @@ package com.xing.qa.selenium.grid.node;
 public enum SerieNames {
     session,
     command,
-    utilization, node_errors;
+    utilization,
+    node_errors
 }

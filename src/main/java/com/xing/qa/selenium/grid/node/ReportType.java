@@ -8,5 +8,7 @@ package com.xing.qa.selenium.grid.node;
 public enum ReportType {
     start,
     finish,
-    timeout, command, result;
+    timeout,
+    command,
+    result
 }
