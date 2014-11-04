@@ -25,10 +25,12 @@ class NodeReporter extends BaseSeleniumReporter {
         log.finer(String.format("Reporting: node.%s.measure", SerieNames.utilization));
         Serie load = new Serie.Builder(String.format("node.%s.measure", SerieNames.utilization))
                 .columns(
+                        "time",
                         "host",
                         "used",
                         "total"
                 ).values(
+                        System.currentTimeMillis(),
                         remoteHostName,
                         used,
                         total

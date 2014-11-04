@@ -26,11 +26,13 @@ class ErrorReporter extends BaseSeleniumReporter {
     protected void report() {
         Serie exRep = new Serie.Builder(SerieNames.node_errors.toString())
                 .columns(
+                        "time",
                         "host",
                         "error",
                         "message"
                 )
                 .values(
+                        System.currentTimeMillis(),
                         remoteHostName,
                         exception.getClass().getName(),
                         exception.getMessage()

@@ -37,6 +37,7 @@ class CommandReporter extends BaseSeleniumReporter {
 
         Serie s = new Serie.Builder(String.format("session.cmd.%s.measure", type))
                 .columns(
+                        "time",
                         "host",
                         "ext_key",
                         "int_key",
@@ -48,12 +49,13 @@ class CommandReporter extends BaseSeleniumReporter {
                         "cmd"
                 )
                 .values(
+                        System.currentTimeMillis(),
                         remoteHostName,
                         sessionKey,
                         session.getInternalKey(),
-                        String.valueOf(session.isForwardingRequest()),
-                        String.valueOf(session.isOrphaned()),
-                        String.valueOf(session.getInactivityTime()),
+                        session.isForwardingRequest(),
+                        session.isOrphaned(),
+                        session.getInactivityTime(),
                         request.getMethod(),
                         request.getPathInfo(),
                         request.getContent()

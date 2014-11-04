@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.String.format;
 
 /**
-* SessionReporter
+* Session Reporter
 *
 * @author Jens Hausherr (jens.hausherr@xing.com)
 */
@@ -34,14 +34,17 @@ class SessionReporter extends BaseSeleniumReporter {
             sessionKey = esk.getKey();
         }
 
-        Serie.Builder srep = new Serie.Builder(format("session.event.%s.measure", type));
+        Serie.Builder srep = new Serie.Builder("session.event.measure");
 
-        final String forwardingRequest = String.valueOf(session.isForwardingRequest());
-        final String orphaned = String.valueOf(session.isOrphaned());
-        final String inactivityTime = String.valueOf(session.getInactivityTime());
+        final Boolean forwardingRequest = session.isForwardingRequest();
+        final Boolean orphaned = session.isOrphaned();
+        final Long inactivityTime =session.getInactivityTime();
+        final long time = System.currentTimeMillis();
         if (ReportType.timeout != type) {
             srep.columns(
+                    "time",
                     "host",
+                    "type",
                     "ext_key",
                     "int_key",
                     "forwarding",
@@ -49,7 +52,9 @@ class SessionReporter extends BaseSeleniumReporter {
                     "inactivity"
             );
             srep.values(
+                    time,
                     remoteHostName,
+                    type.toString(),
                     sessionKey,
                     session.getInternalKey(),
                     forwardingRequest,
@@ -58,7 +63,9 @@ class SessionReporter extends BaseSeleniumReporter {
             );
         } else {
             srep.columns(
+                    "time",
                     "host",
+                    "type",
                     "ext_key",
                     "int_key",
                     "forwarding",
@@ -66,7 +73,9 @@ class SessionReporter extends BaseSeleniumReporter {
                     "inactivity",
                     "browser_starting");
             srep.values(
+                    time,
                     remoteHostName,
+                    type.toString(),
                     sessionKey,
                     session.getInternalKey(),
                     forwardingRequest,
@@ -79,6 +88,7 @@ class SessionReporter extends BaseSeleniumReporter {
         Serie.Builder req = new Serie.Builder(
                 format("session.cap.requested.%s.measure", type));
         req.columns(
+                "time",
                 "host",
                 "ext_key",
                 "int_key",
@@ -90,6 +100,7 @@ class SessionReporter extends BaseSeleniumReporter {
 
         for (Map.Entry<String, Object> rcap : session.getRequestedCapabilities().entrySet()) {
             req.values(
+                    time,
                     remoteHostName,
                     sessionKey,
                     session.getInternalKey(),
@@ -97,11 +108,12 @@ class SessionReporter extends BaseSeleniumReporter {
                     orphaned,
                     inactivityTime,
                     rcap.getKey(),
-                    String.valueOf(rcap.getValue()));
+                    rcap.getValue());
         }
 
         Serie.Builder prov = new Serie.Builder(format("session.cap.provided.%s.measure", type));
         prov.columns(
+                "time",
                 "host",
                 "ext_key",
                 "int_key",
@@ -113,6 +125,7 @@ class SessionReporter extends BaseSeleniumReporter {
 
         for (Map.Entry<String, Object> scap : session.getSlot().getCapabilities().entrySet()) {
             prov.values(
+                    time,
                     remoteHostName,
                     sessionKey,
                     session.getInternalKey(),
@@ -120,11 +133,10 @@ class SessionReporter extends BaseSeleniumReporter {
                     orphaned,
                     inactivityTime,
                     scap.getKey(),
-                    String.valueOf(scap.getValue()));
+                    scap.getValue());
         }
 
         write(TimeUnit.MILLISECONDS, srep.build(), req.build(), prov.build());
-
     }
 
 }
