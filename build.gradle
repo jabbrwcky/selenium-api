@@ -18,7 +18,7 @@ configurations {
 dependencies {
     compile 'org.influxdb:influxdb-java:1.2'
     provided 'org.seleniumhq.selenium:selenium-server:2.44.0'
-    provided 'org.json:json:20080701'
+    compile 'org.json:json:20080701'
     testCompile 'org.testng:testng:6.8.8'
 }
 
