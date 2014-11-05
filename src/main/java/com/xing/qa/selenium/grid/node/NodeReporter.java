@@ -11,13 +11,12 @@ import java.util.concurrent.TimeUnit;
 * @author Jens Hausherr (jens.hausherr@xing.com)
 */
 class NodeReporter extends BaseSeleniumReporter {
-    private final int used;
-    private final int total;
 
-    public NodeReporter(String remoteHostName, InfluxDB influxdb, String database, int used, int total) {
+    private final MonitoringWebProxy proxy;
+
+    public NodeReporter(String remoteHostName, InfluxDB influxdb, String database, MonitoringWebProxy monitoringWebProxy) {
         super(remoteHostName, influxdb, database);
-        this.used = used;
-        this.total = total;
+        this.proxy = monitoringWebProxy;
     }
 
     @Override
@@ -32,8 +31,8 @@ class NodeReporter extends BaseSeleniumReporter {
                 ).values(
                         System.currentTimeMillis(),
                         remoteHostName,
-                        used,
-                        total
+                        proxy.getTotalUsed(),
+                        proxy.getMaxNumberOfConcurrentTestSessions()
                 ).build();
         write(TimeUnit.MILLISECONDS, load);
     }

@@ -34,8 +34,20 @@ Monitoring
 When a node is not started with the default class `DefaultRemoteProxy` but with `-proxy com.xing.qa.selenium.grid.node.MonitoringWebProxy`
 the hub will report metrics on the operating system and node operation to a InfluxDB server.
 
-Custom Implementations
-----------------------
+### Configuring reporting
+
+The Configuration of the reporting destination is done by environment variables:
+
+| Variable | Default | Description |
++----------+---------+--------------------------------------+
+| IFX_DB_HOST |
+
+### Reported metrics
+
+The MonitoringWebProxy reports the following series ans values to InfluxDB
+
+Custom Implementations of Selenium components
+---------------------------------------------
 
 ### Prioritizer
 
@@ -83,30 +95,74 @@ SELENIUM_MATCHERS=<capability>:<matcher name>[,<capability>:<matcher name>]...
 
 #### Predefined Capability matchers
 
-| name | desc                       |
-+------+----------------------------+
-| exact | Matches if required and provided capability match exactly. |
-| platform | Same behaviour as the default matcher wrt. platform names |
-| rvm | "Ruby Version Matcher" that compares versions like rubygems does this |
+| Name     | Description                                                           |
++----------+-----------------------------------------------------------------------+
+| exact    | Matches if required and provided capability match exactly.            |
+| platform | Same behaviour as the default matcher wrt. platform names             |
+| rvm      | "Ruby Version Matcher" that compares versions like rubygems does this |
  
+##### Exact matcher
+
+The exact matcher has no further configuration.
+
+##### Platform matcher
+
+The platform matcher has no further configuration. It tries to resolve any version passed in to a valid platform 
+and tries to match this against the provided capabilities of a node.
+
 ##### RVM 
 
-Version specification
+Version specification in the requested capabilities.
 
-| spec    | meaning |
-+---------+---------+
-| `x.y`   | Version has to match x.y exactly |
-| `~>x.y` | Version matches x.y, x.y.z excluding version <x.y and > (x+1).y |
-| `>x.y`  | TBD |
-| `<x.y`  | TBD |
-| `>=x.y` | TBD |
-| `<=x.y` | TBD | 
+| spec    | meaning                                                                |
++---------+------------------------------------------------------------------------+
+| `x.y`   | Version has to match x.y exactly                                       |
+| `~>x.y` | Version matches `x.y`, `x.y.z` excluding version `<x.y` and `>(x+1).y` |
+| `>x.y`  | Version matches any version greater than x.y (e.g. `x.(y+1)`           |
+| `<x.y`  | Version matches any version less than x.y (e.g. `x.(y-1)`              |
+| `>=x.y` | Version matches any version greater than x.y (e.g. `x.(y+1)`           |
+| `<=x.y` | Version matches any version greater than x.y (e.g. `(x-1).(y+1)`       | 
 
+Any Part of a version that can not be converted to a numerical value will be compared as exact string match (e.g. `x.y.beta`).
 
-#### Extending the capability matcher
+#### Implementing additional capability matchers
 
-TBD
+To implement additional capability matchers you can either extend this project or keep the capability matchers in your own,
+separate JAR file.
 
+Implementing a capability matcher consists of two steps:
+
+ 1. Implementing the capability matcher.
+ 2. Providing registration information to make the capability matcher configurable.
+ 
+##### Implementing the capability matcher
+
+Each capability matcher has to implement the interface `com.xing.qa.selenium.grid.hub.capmat.CapMat`, which is a simple,
+single method interface:
+
+```
+public interface CapMat {
+  public boolean matches(Object requested, Object provided);
+}
+```
+
+The capability matcher has to provide a no-argument constructor to be usable.
+
+##### Registering the capability matcher
+
+To make the capability matcher available for use, you have to provide a file named `capabilityMatchers` in the root of your
+jar/classpath.
+
+The file is a pretty standard Java properties file mapping a name that is used to reference the capability matcher later 
+on to the class name of the capability matcher to instantiate.
+  
+Here is the file content of the file registering the default matchers:
+
+```
+rvm: com.xing.qa.selenium.grid.hub.capmat.RubyVersionMatcher
+platform: com.xing.qa.selenium.grid.hub.capmat.PlatformMatcher
+exact: com.xing.qa.selenium.grid.hub.capmat.ExactMatcher
+```
 
 Custom capabilities
 -------------------

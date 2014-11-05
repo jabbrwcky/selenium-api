@@ -69,7 +69,7 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
 
         LOG.info(String.format("Initializing monitoring WebProxy for %s: %s.", remoteHostName, request.toJSON()));
 
-        nodeReporter = EXECUTOR.scheduleAtFixedRate(new NodeReporter(remoteHostName, INFLUX_DB, DATABASE, getTotalUsed(), getMaxNumberOfConcurrentTestSessions()), 0, 10, TimeUnit.SECONDS);
+        nodeReporter = EXECUTOR.scheduleAtFixedRate(new NodeReporter(remoteHostName, INFLUX_DB, DATABASE, this), 0, 5, TimeUnit.SECONDS);
     }
 
     @Override
