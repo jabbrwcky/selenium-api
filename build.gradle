@@ -1,6 +1,6 @@
 apply plugin: 'java'
 
-version = '0.4.2'
+version = '0.4.3'
 group = 'com.xing.qa'
 
 sourceCompatibility = 1.7
@@ -16,13 +16,9 @@ configurations {
 }
 
 dependencies {
-    //compile fileTree(dir: 'lib', include: '*.jar')
-    //compile 'net.sf.jopt-simple:jopt-simple:4.7'
     compile 'org.influxdb:influxdb-java:1.2'
     provided 'org.seleniumhq.selenium:selenium-server:2.44.0'
-    //compile 'com.github.spullara.mustache.java:compiler:0.8.16'
-    //compile 'org.json:json:20140107'
-    compile 'org.json:json:20080701'
+    provided 'org.json:json:20080701'
     testCompile 'org.testng:testng:6.8.8'
 }
 

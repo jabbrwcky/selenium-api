@@ -24,7 +24,7 @@ class ErrorReporter extends BaseSeleniumReporter {
 
     @Override
     protected void report() {
-        Serie exRep = new Serie.Builder(SerieNames.node_errors.toString())
+        Serie exRep = new Serie.Builder("node.errors")
                 .columns(
                         "time",
                         "host",

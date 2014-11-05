@@ -59,12 +59,12 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
     public MonitoringWebProxy(RegistrationRequest request, Registry registry) {
         super(request, registry);
         final String addr = request.getConfigAsString("host");
-        remoteHostName = addr;
+        remoteHostName = addr.toLowerCase();
 
         try {
-            remoteHostName = InetAddress.getByName(addr).getCanonicalHostName();
+            remoteHostName = InetAddress.getByName(addr).getCanonicalHostName().toLowerCase();
         } catch (Exception e) {
-            LOG.info(format("Unable to lookup name for rempote address '%s", addr));
+            LOG.info(format("Unable to lookup name for remote address '%s", addr));
         }
 
         LOG.info(String.format("Initializing monitoring WebProxy for %s: %s.", remoteHostName, request.toJSON()));

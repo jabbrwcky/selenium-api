@@ -22,17 +22,20 @@ class NodeReporter extends BaseSeleniumReporter {
     @Override
     protected void report() {
         log.finer(String.format("Reporting: node.%s.measure", SerieNames.utilization));
+
         Serie load = new Serie.Builder(String.format("node.%s.measure", SerieNames.utilization))
                 .columns(
                         "time",
                         "host",
                         "used",
-                        "total"
+                        "total",
+                        "normalized"
                 ).values(
                         System.currentTimeMillis(),
                         remoteHostName,
                         proxy.getTotalUsed(),
-                        proxy.getMaxNumberOfConcurrentTestSessions()
+                        proxy.getMaxNumberOfConcurrentTestSessions(),
+                        proxy.getResourceUsageInPercent()
                 ).build();
         write(TimeUnit.MILLISECONDS, load);
     }
