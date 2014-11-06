@@ -1,6 +1,5 @@
 package com.xing.qa.selenium.grid.hub;
 
-import com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,12 +27,12 @@ public class WebProxyJsonRenderer implements JSONRenderer {
     @Override
     public JSONObject render() throws JSONException {
         JSONObject json = new JSONObject();
-        JsonObject status = proxy.getStatus();
+        JSONObject status = proxy.getStatus();
         json.put("class", proxy.getClass().getSimpleName());
 
         try {
             json.put("version",
-                    status.getAsJsonObject("value").getAsJsonObject("build").getAsJsonPrimitive("version").getAsString());
+               status.getJSONObject("value").getJSONObject("build").getString("version"));
         } catch (JSONException e) {
             json.put("version", "unknown");
             json.put("error", e.getMessage());
@@ -41,8 +40,8 @@ public class WebProxyJsonRenderer implements JSONRenderer {
             e.printStackTrace();
         }
 
-        json.put("os", status.getAsJsonObject("value").getAsJsonPrimitive("os").getAsString());
-        json.put("java", status.getAsJsonObject("value").getAsJsonObject("java").getAsJsonPrimitive("version").getAsString());
+    json.put("os", status.getJSONObject("value").getJSONObject("os"));
+    json.put("java", status.getJSONObject("value").getJSONObject("java").getString("version"));
         json.put("configuration", proxy.getConfig());
 
         SlotsLines rcLines = new SlotsLines();
