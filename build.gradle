@@ -1,6 +1,6 @@
 apply plugin: 'java'
 
-version = '0.4.3'
+version = '0.4.4'
 group = 'com.xing.qa'
 
 sourceCompatibility = 1.7
@@ -17,7 +17,7 @@ configurations {
 
 dependencies {
     compile 'org.influxdb:influxdb-java:1.2'
-    provided 'org.seleniumhq.selenium:selenium-server:2.44.0'
+    provided 'org.seleniumhq.selenium:selenium-server:2.43.0'
     compile 'org.json:json:20080701'
     testCompile 'org.testng:testng:6.8.8'
 }

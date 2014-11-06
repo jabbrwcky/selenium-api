@@ -35,7 +35,7 @@ class NodeReporter extends BaseSeleniumReporter {
                         remoteHostName,
                         proxy.getTotalUsed(),
                         proxy.getMaxNumberOfConcurrentTestSessions(),
-                        proxy.getResourceUsageInPercent()
+                        proxy.getTotalUsed()/proxy.getMaxNumberOfConcurrentTestSessions()
                 ).build();
         write(TimeUnit.MILLISECONDS, load);
     }
