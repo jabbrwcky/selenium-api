@@ -1,5 +1,6 @@
 package com.xing.qa.selenium.grid.hub;
 
+import com.xing.qa.selenium.grid.Version;
 import com.xing.qa.selenium.grid.hub.capmat.CapMat;
 import com.xing.qa.selenium.grid.hub.capmat.ExactMatcher;
 import org.openqa.selenium.remote.CapabilityType;
@@ -20,6 +21,8 @@ import java.util.regex.Pattern;
  * @author Jens Hausherr (jens.hausherr@xing.com)
  */
 public class ConfigurableCapabilityMatcher implements org.openqa.grid.internal.utils.CapabilityMatcher {
+
+    private static final String version = Version.version();
 
     private static final Logger LOGGER = Logger.getLogger(ConfigurableCapabilityMatcher.class.getName());
 
