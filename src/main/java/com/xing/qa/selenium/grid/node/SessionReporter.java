@@ -173,7 +173,7 @@ class SessionReporter extends BaseSeleniumReporter {
                 requested.get("rotatable")
         );
 
-        Serie.Builder nodeProfile = new Serie.Builder("session.req.profile.measure");
+        Serie.Builder nodeProfile = new Serie.Builder("session.prov.profile.measure");
         sessionProfile.columns(
                 "time",
                 "host",
