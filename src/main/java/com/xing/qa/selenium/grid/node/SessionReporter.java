@@ -11,10 +11,10 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.String.format;
 
 /**
-* Session Reporter
-*
-* @author Jens Hausherr (jens.hausherr@xing.com)
-*/
+ * Session Reporter
+ *
+ * @author Jens Hausherr (jens.hausherr@xing.com)
+ */
 class SessionReporter extends BaseSeleniumReporter {
     private final TestSession session;
     private final ReportType type;
@@ -38,7 +38,7 @@ class SessionReporter extends BaseSeleniumReporter {
 
         final Boolean forwardingRequest = session.isForwardingRequest();
         final Boolean orphaned = session.isOrphaned();
-        final Long inactivityTime =session.getInactivityTime();
+        final Long inactivityTime = session.getInactivityTime();
         final long time = System.currentTimeMillis();
         if (ReportType.timeout != type) {
             srep.columns(
@@ -98,7 +98,9 @@ class SessionReporter extends BaseSeleniumReporter {
                 "capability",
                 "val");
 
-        for (Map.Entry<String, Object> rcap : session.getRequestedCapabilities().entrySet()) {
+        Map<String,Object> requested = session.getRequestedCapabilities();
+
+        for (Map.Entry<String, Object> rcap : requested.entrySet()) {
             req.values(
                     time,
                     remoteHostName,
@@ -136,7 +138,69 @@ class SessionReporter extends BaseSeleniumReporter {
                     scap.getValue());
         }
 
-        write(TimeUnit.MILLISECONDS, srep.build(), req.build(), prov.build());
+        Serie.Builder sessionProfile = new Serie.Builder("session.req.profile.measure");
+        sessionProfile.columns(
+                "time",
+                "host",
+                "ext_key",
+                "int_key",
+                "id",
+                "platform",
+                "browserName",
+                "version",
+                "firefox_binary",
+                "firefox_profile",
+                "javascriptEnabled",
+                "takesScreenshot",
+                "nativeEvents",
+                "cssSelectorsEnabled",
+                "rotatable"
+        ).values(
+                time,
+                remoteHostName,
+                sessionKey,
+                session.getInternalKey(),
+                requested.get("id"),
+                requested.get("platform"),
+                requested.get("browserName"),
+                requested.get("version"),
+                requested.get("firefox_profile"),
+                requested.get("firefox_binary"),
+                requested.get("javascriptEnabled"),
+                requested.get("takesScreenshot"),
+                requested.get("nativeEvents"),
+                requested.get("cssSelectorsEnabled"),
+                requested.get("rotatable")
+        );
+
+        Serie.Builder nodeProfile = new Serie.Builder("session.req.profile.measure");
+        sessionProfile.columns(
+                "time",
+                "host",
+                "ext_key",
+                "int_key",
+                "id",
+                "platform",
+                "browserName",
+                "version",
+                "firefox_binary",
+                "seleniumProtocol",
+                "maxInstances"
+        ).values(
+                time,
+                remoteHostName,
+                sessionKey,
+                session.getInternalKey(),
+                requested.get("id"),
+                requested.get("platform"),
+                requested.get("browserName"),
+                requested.get("version"),
+                requested.get("firefox_binary"),
+                requested.get("seleniumProtocol"),
+                requested.get("maxInstances")
+        );
+
+        write(TimeUnit.MILLISECONDS, srep.build(), req.build(), prov.build(), sessionProfile.build(), nodeProfile.build());
     }
 
 }

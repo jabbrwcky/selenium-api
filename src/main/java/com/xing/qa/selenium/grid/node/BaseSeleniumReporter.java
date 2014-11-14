@@ -1,5 +1,6 @@
 package com.xing.qa.selenium.grid.node;
 
+import com.xing.qa.selenium.grid.Version;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Serie;
 import org.openqa.grid.internal.ExternalSessionKey;
@@ -15,6 +16,8 @@ import java.util.logging.Logger;
  * @author Jens Hausherr (jens.hausherr@xing.com)
  */
 public abstract class BaseSeleniumReporter implements Runnable {
+
+    private static final String version = Version.version();
 
     protected final String remoteHostName;
     protected final Logger log = Logger.getLogger(getClass().getName());
