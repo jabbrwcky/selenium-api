@@ -1,5 +1,6 @@
 package com.xing.qa.selenium.grid.hub;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,6 +12,10 @@ import org.openqa.grid.internal.TestSlot;
 import org.openqa.grid.web.servlet.beta.MiniCapability;
 import org.openqa.grid.web.servlet.beta.SlotsLines;
 import org.openqa.selenium.remote.CapabilityType;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Renderer that presents data on a WebProxy as JSON object.
@@ -41,7 +46,12 @@ public class WebProxyJsonRenderer implements JSONRenderer {
             e.printStackTrace();
         }
 
-        json.put("os", status.getAsJsonObject("value").getAsJsonPrimitive("os").getAsString());
+        Set<Map.Entry<String, JsonElement>> os = status.getAsJsonObject("value").getAsJsonObject("os").entrySet();
+        Map<String, String> osProperties = new HashMap<>();
+        for(Map.Entry<String, JsonElement> entry : os) {
+            osProperties.put(entry.getKey(), entry.getValue().getAsString());
+        }
+        json.put("os", osProperties);
         json.put("java", status.getAsJsonObject("value").getAsJsonObject("java").getAsJsonPrimitive("version").getAsString());
         json.put("configuration", proxy.getConfig());
 
