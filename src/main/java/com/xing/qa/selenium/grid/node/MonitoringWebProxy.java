@@ -58,7 +58,7 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
 
     public MonitoringWebProxy(RegistrationRequest request, Registry registry) {
         super(request, registry);
-        final String addr = request.getConfigAsString("host");
+        final String addr = request.getConfiguration().host;
         remoteHostName = addr.toLowerCase();
 
         try {
@@ -67,7 +67,7 @@ public class MonitoringWebProxy extends DefaultRemoteProxy {
             LOG.info(format("Unable to lookup name for remote address '%s", addr));
         }
 
-        LOG.info(String.format("Initializing monitoring WebProxy for %s: %s.", remoteHostName, request.toJSON()));
+        LOG.info(String.format("Initializing monitoring WebProxy for %s: %s.", remoteHostName, request.toJson()));
 
         nodeReporter = EXECUTOR.scheduleAtFixedRate(new NodeReporter(remoteHostName, INFLUX_DB, DATABASE, this), 0, 5, TimeUnit.SECONDS);
     }

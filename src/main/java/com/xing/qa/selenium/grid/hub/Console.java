@@ -7,6 +7,7 @@ import org.openqa.grid.internal.RemoteProxy;
 import org.openqa.grid.web.Hub;
 import org.openqa.grid.web.servlet.RegistryBasedServlet;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.internal.BuildInfo;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +28,6 @@ public class Console extends RegistryBasedServlet {
 
     private final Logger log = Logger.getLogger(getClass().getName());
     private String coreVersion;
-    private String coreRevision;
 
     public Console() {
         this(null);
@@ -35,7 +35,8 @@ public class Console extends RegistryBasedServlet {
 
     public Console(Registry registry) {
         super(registry);
-        getVersion();
+
+        coreVersion = new BuildInfo().getReleaseLabel();
     }
 
     @Override
@@ -82,7 +83,6 @@ public class Console extends RegistryBasedServlet {
     protected JSONObject pendingRequests() throws JSONException {
         JSONObject pending = new JSONObject();
         int p = getRegistry().getNewSessionRequestCount();
-        int to = getRegistry().getNewSessionWaitTimeout();
         List<Map<String,?>> desired;
 
         if (p > 0) {
@@ -96,7 +96,6 @@ public class Console extends RegistryBasedServlet {
 
         pending.put("pending", p);
         pending.put("requested_capabilities", desired);
-        pending.put("timeout", to);
 
         return pending;
     }
@@ -110,42 +109,20 @@ public class Console extends RegistryBasedServlet {
             List<JSONObject> nodes = new ArrayList<JSONObject>();
 
             for (RemoteProxy proxy : getRegistry().getAllProxies()) {
-                JSONRenderer beta = new WebProxyJsonRenderer(proxy);
-                nodes.add(beta.render());
+                try {
+                    JSONRenderer beta = new WebProxyJsonRenderer(proxy);
+                    nodes.add(beta.render());
+                } catch (Exception e) {}
             }
 
-            status.put("version", coreVersion + coreRevision);
-            status.put("configuration", getRegistry().getConfiguration().getAllParams());
-            status.put("host", h.getHost());
-            status.put("port", h.getPort());
+            status.put("version", coreVersion);
+            status.put("configuration", getRegistry().getConfiguration().toJson().getAsJsonObject().entrySet());
+            status.put("host", h.getConfiguration().host);
+            status.put("port", h.getConfiguration().port);
             status.put("registration_url", h.getRegistrationURL());
             status.put("nodes", nodes);
             status.put("requests", pendingRequests());
 
             return status;
     }
-
-    private void getVersion() {
-        final Properties p = new Properties();
-
-        InputStream stream =
-                Thread.currentThread().getContextClassLoader().getResourceAsStream("VERSION.txt");
-        if (stream == null) {
-            log.severe("Couldn't determine version number");
-            return;
-        }
-        try {
-            p.load(stream);
-        } catch (IOException e) {
-            log.severe("Cannot load version from VERSION.txt" + e.getMessage());
-        }
-
-        coreVersion = p.getProperty("selenium.core.version");
-        coreRevision = p.getProperty("selenium.core.revision");
-
-        if (coreVersion == null) {
-            log.severe("Cannot load selenium.core.version from VERSION.txt");
-        }
-    }
-
 }

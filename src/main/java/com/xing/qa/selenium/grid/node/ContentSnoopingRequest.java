@@ -1,5 +1,6 @@
 package com.xing.qa.selenium.grid.node;
 
+import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -59,10 +60,25 @@ class ContentSnoopingRequest extends HttpServletRequestWrapper {
             byte[] contents = content.getBytes(encoding);
 
             @Override
+            public boolean isFinished() {
+                return idx < contents.length;
+            }
+
+            @Override
+            public boolean isReady() {
+                return !isFinished();
+            }
+
+            @Override
             public int read() throws IOException {
                 if (idx < contents.length) {
                     return contents[idx++];
                 } else return -1;
+            }
+
+            @Override
+            public void setReadListener(ReadListener listener) {
+                throw new java.lang.IllegalStateException();
             }
         };
     }
