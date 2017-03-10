@@ -6,13 +6,13 @@ Additional Servlets and monitoring for Selenium Grid 2
 JSON console
 ------------
 
-The servlet `com.xing.qa.selenium.grid.hub.Console` implements an endpoint that returns the information given by the 
+The servlet `com.xing.qa.selenium.grid.hub.Console` implements an endpoint that returns the information given by the
 regular console as JSON (and adds some extra infos).
 
 ### Usage
 
 ```
-java -cp selenium-standalone<version>.jar:selenium-api.jar org.openqa.grid.selenium.GridLauncher -servlets com.xing.qa.selenium.grid.hub.Console -role hub 
+java -cp selenium-standalone<version>.jar:selenium-api.jar org.openqa.grid.selenium.GridLauncherV3 -servlets com.xing.qa.selenium.grid.hub.Console -role hub 
 ```
 
 This will add new URL endpoint to the selenium grid hub: `http://localhost:4444/grid/admin/Console/*`
@@ -24,7 +24,7 @@ A call to http://localhost:4444/grid/admin/Console will return a full status rep
 
  * version and status of the hub server
  * list of nodes and their installed selenium version and available/utilized browsers
- 
+
 ### Detail requests
 
 The call `http://localhost:4444/grid/admin/Console/requests` will just return a list of the pending requests of the connected nodes.
@@ -42,9 +42,9 @@ The Configuration of the reporting destination is done by environment variables:
 | Variable       | Default         | Description                             |
 +----------------+-----------------+-----------------------------------------+
 | `IFXDB_HOST`   | `localhost`     | InfluxDB server hostname                |
-| `IFXDB_PORT`   | `8086`          | InfluxDB server port                    | 
+| `IFXDB_PORT`   | `8086`          | InfluxDB server port                    |
 | `IFXDB_DB`     | `selenium-grid` | Name of database for the collected data |
-| `IFXDB_USER`   | `root`          | InfluxDB username                       | 
+| `IFXDB_USER`   | `root`          | InfluxDB username                       |
 | `IFXDB_PASSWD` | `root`          | InfluxDB password                       |
 
 ### Reported metrics
@@ -90,8 +90,8 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session                            |
 | `int_key`    | `String`  | internal key of sesson                             |
 | `inactivity` | `long`    | milliseconds of inavctivity                        |
-| `forwarding` | `boolean` | true, if forwarding request                        | 
-| `orphaned`   | `boolean` | true, if orphaned session                          | 
+| `forwarding` | `boolean` | true, if forwarding request                        |
+| `orphaned`   | `boolean` | true, if orphaned session                          |
 | `capability` | `String`  | name of capability                                 |
 | `val`        | `any`     | value of capability (String, numerical or boolean) |
 
@@ -104,8 +104,8 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session                            |
 | `int_key`    | `String`  | internal key of sesson                             |
 | `inactivity` | `long`    | milliseconds of inavctivity                        |
-| `forwarding` | `boolean` | true, if forwarding request                        | 
-| `orphaned`   | `boolean` | true, if orphaned session                          | 
+| `forwarding` | `boolean` | true, if forwarding request                        |
+| `orphaned`   | `boolean` | true, if orphaned session                          |
 | `capability` | `String`  | name of capability                                 |
 | `val`        | `any`     | value of capability (String, numerical or boolean) |
 
@@ -117,8 +117,8 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session                            |
 | `int_key`    | `String`  | internal key of sesson                             |
 | `inactivity` | `long`    | milliseconds of inavctivity                        |
-| `forwarding` | `boolean` | true, if forwarding request                        | 
-| `orphaned`   | `boolean` | true, if orphaned session                          | 
+| `forwarding` | `boolean` | true, if forwarding request                        |
+| `orphaned`   | `boolean` | true, if orphaned session                          |
 | `capability` | `String`  | name of capability                                 |
 | `val`        | `any`     | value of capability (String, numerical or boolean) |
 
@@ -131,8 +131,8 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session                            |
 | `int_key`    | `String`  | internal key of sesson                             |
 | `inactivity` | `long`    | milliseconds of inavctivity                        |
-| `forwarding` | `boolean` | true, if forwarding request                        | 
-| `orphaned`   | `boolean` | true, if orphaned session                          | 
+| `forwarding` | `boolean` | true, if forwarding request                        |
+| `orphaned`   | `boolean` | true, if orphaned session                          |
 | `capability` | `String`  | name of capability                                 |
 | `val`        | `any`     | value of capability (String, numerical or boolean) |
 
@@ -144,8 +144,8 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session                            |
 | `int_key`    | `String`  | internal key of sesson                             |
 | `inactivity` | `long`    | milliseconds of inavctivity                        |
-| `forwarding` | `boolean` | true, if forwarding request                        | 
-| `orphaned`   | `boolean` | true, if orphaned session                          | 
+| `forwarding` | `boolean` | true, if forwarding request                        |
+| `orphaned`   | `boolean` | true, if orphaned session                          |
 | `capability` | `String`  | name of capability                                 |
 | `val`        | `any`     | value of capability (String, numerical or boolean) |
 
@@ -157,8 +157,8 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session                            |
 | `int_key`    | `String`  | internal key of sesson                             |
 | `inactivity` | `long`    | milliseconds of inavctivity                        |
-| `forwarding` | `boolean` | true, if forwarding request                        | 
-| `orphaned`   | `boolean` | true, if orphaned session                          | 
+| `forwarding` | `boolean` | true, if forwarding request                        |
+| `orphaned`   | `boolean` | true, if orphaned session                          |
 | `capability` | `String`  | name of capability                                 |
 | `val`        | `any`     | value of capability (String, numerical or boolean) |
 
@@ -170,11 +170,11 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session      |
 | `int_key`    | `String`  | internal key of sesson       |
 | `inactivity` | `long`    | milliseconds of inavctivity  |
-| `forwarding` | `boolean` | true, if forwarding request  | 
-| `orphaned`   | `boolean` | true, if orphaned session    | 
+| `forwarding` | `boolean` | true, if forwarding request  |
+| `orphaned`   | `boolean` | true, if orphaned session    |
 | `cmd_method` | `String`  | HTTP method of command       |
 | `cmd_action` | `any`     | Command URL called on remote |
-| `cmd`        | `String`  | Request body of command      | 
+| `cmd`        | `String`  | Request body of command      |
 
 #### Serie session.cmd.result.measure
 
@@ -184,12 +184,12 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session      |
 | `int_key`    | `String`  | internal key of sesson       |
 | `inactivity` | `long`    | milliseconds of inavctivity  |
-| `forwarding` | `boolean` | true, if forwarding request  | 
-| `orphaned`   | `boolean` | true, if orphaned session    | 
+| `forwarding` | `boolean` | true, if forwarding request  |
+| `orphaned`   | `boolean` | true, if orphaned session    |
 | `cmd_method` | `String`  | HTTP method of command       |                      
 | `cmd_action` | `any`     | Command URL called on remote |                      
 | `cmd`        | `String`  | Request body of command      |                    
-  
+
 #### Serie session.event.measure
 
 | Field        | Type      | Content                                        |
@@ -198,8 +198,8 @@ The MonitoringWebProxy reports the following series and values to InfluxDB:
 | `ext_key`    | `String`  | external key of session                        |
 | `int_key`    | `String`  | internal key of sesson                         |
 | `inactivity` | `long`    | milliseconds of inavctivity                    |
-| `forwarding` | `boolean` | true, if forwarding request                    | 
-| `orphaned`   | `boolean` | true, if orphaned session                      | 
+| `forwarding` | `boolean` | true, if forwarding request                    |
+| `orphaned`   | `boolean` | true, if orphaned session                      |
 | `type`       | `String`  | type of session event (start, finish, timeout) |
 
 Custom Implementations of Selenium components
@@ -207,7 +207,7 @@ Custom Implementations of Selenium components
 
 ### Prioritizer
 
-The class `com.xing.qa.selenium.grid.hub.Prioritizer` implements a Session prioritizer for the Selenium hub that 
+The class `com.xing.qa.selenium.grid.hub.Prioritizer` implements a Session prioritizer for the Selenium hub that
 assigns a higher priority to tasks coming from an CI server (see Custom Capabilities for details)
 
 #### Using the prioritizer
@@ -227,9 +227,9 @@ The class `com.xing.qa.selenium.grid.hub.ConfigurableCapabilityMatcher` implemen
 mimicks the behaviour of the default capability matcher with a few notable exceptions:
 
   1. Custom capability matchers can be added and reused for different capabilities.
-  2. The version matcher for comparing requested browser versions is more versatile than the exact match offered by the 
+  2. The version matcher for comparing requested browser versions is more versatile than the exact match offered by the
      default capability matcher.
-     
+
 #### Using the new capability matcher
 
 Add a property capability matcher to your JSON config for configuring the hub:
@@ -255,10 +255,10 @@ If no configuration is given, the default mapping is used:
 SELENIUM_MATCHERS=platform:platform,browserName:exact,version:rvm
 ```
 
-Any other capabilities may be specifed but will not be evaluated by the CapabilityMatcher. Capabilities starting with 
+Any other capabilities may be specified but will not be evaluated by the CapabilityMatcher. Capabilities starting with
 an underscore (`_`) are considered to be grid-internal properties and will be generally exempt from matching.
 
-A specified value of `""`, `" "`, `"*"` or anything that translates to `null` will be considered as `ANY` value. 
+A specified value of `""`, `" "`, `"*"` or anything that translates to `null` will be considered as `ANY` value.
 
 #### Predefined Capability matchers
 
@@ -267,17 +267,17 @@ A specified value of `""`, `" "`, `"*"` or anything that translates to `null` wi
 | exact    | Matches if required and provided capability match exactly.            |
 | platform | Same behaviour as the default matcher wrt. platform names             |
 | rvm      | "Ruby Version Matcher" that compares versions like rubygems does this |
- 
+
 ##### Exact matcher
 
 The exact matcher has no further configuration.
 
 ##### Platform matcher
 
-The platform matcher has no further configuration. It tries to resolve any version passed in to a valid platform 
+The platform matcher has no further configuration. It tries to resolve any version passed in to a valid platform
 and tries to match this against the provided capabilities of a node.
 
-##### RVM 
+##### RVM
 
 Version specification in the requested capabilities.
 
@@ -288,7 +288,7 @@ Version specification in the requested capabilities.
 | `>x.y`  | Version matches any version greater than x.y (e.g. `x.(y+1)`           |
 | `<x.y`  | Version matches any version less than x.y (e.g. `x.(y-1)`              |
 | `>=x.y` | Version matches any version greater than x.y (e.g. `x.(y+1)`           |
-| `<=x.y` | Version matches any version greater than x.y (e.g. `(x-1).(y+1)`       | 
+| `<=x.y` | Version matches any version greater than x.y (e.g. `(x-1).(y+1)`       |
 
 Any Part of a version that can not be converted to a numerical value will be compared as exact string match (e.g. `x.y.beta`).
 
@@ -301,7 +301,7 @@ Implementing a capability matcher consists of two steps:
 
  1. Implementing the capability matcher.
  2. Providing registration information to make the capability matcher configurable.
- 
+
 ##### Implementing the capability matcher
 
 Each capability matcher has to implement the interface `com.xing.qa.selenium.grid.hub.capmat.CapMat`, which is a simple,
@@ -320,9 +320,9 @@ The capability matcher has to provide a no-argument constructor to be usable.
 To make the capability matcher available for use, you have to provide a file named `capabilityMatchers` in the root of your
 jar/classpath.
 
-The file is a pretty standard Java properties file mapping a name that is used to reference the capability matcher later 
+The file is a pretty standard Java properties file mapping a name that is used to reference the capability matcher later
 on to the class name of the capability matcher to instantiate.
-  
+
 Here is the file content of the file registering the default matchers:
 
 ```
@@ -336,7 +336,7 @@ you can map your matcher to a capability (name) in the Matcher configuration.
 
 Custom capabilities
 -------------------
- 
+
 | Property | Value | Description                                           |
 +----------+-------+-------------------------------------------------------+
 | `_CI`    | bool  | Indicates that the session is coming from a CI server |
@@ -347,4 +347,3 @@ Limitations and known issues
  * The configuration is somewhat elaborate to avoid messing with the core selenium configuration. It might be an idea to
    add a configuration file on its own or to extend the selenium node configuration as the configuration by environment
    might hit a limit at some point (esp. with the ConfigurableCapabilityMatcher).
-       
