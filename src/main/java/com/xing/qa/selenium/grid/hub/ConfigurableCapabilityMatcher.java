@@ -2,6 +2,8 @@ package com.xing.qa.selenium.grid.hub;
 
 import com.xing.qa.selenium.grid.hub.capmat.CapMat;
 import com.xing.qa.selenium.grid.hub.capmat.ExactMatcher;
+
+import org.openqa.grid.internal.utils.CapabilityMatcher;
 import org.openqa.selenium.remote.CapabilityType;
 
 import java.io.IOException;
@@ -19,9 +21,9 @@ import java.util.regex.Pattern;
  *
  * @author Jens Hausherr (jens.hausherr@xing.com)
  */
-public class ConfigurableCapabilityMatcher implements org.openqa.grid.internal.utils.CapabilityMatcher {
+public class ConfigurableCapabilityMatcher implements CapabilityMatcher {
 
-    private static final Logger LOGGER = Logger.getLogger(ConfigurableCapabilityMatcher.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(getClass().getName());
 
     private static final String DEFAULT_CAPABILITIES = CapabilityType.PLATFORM + ":platform," + CapabilityType.BROWSER_NAME + ":exact," + CapabilityType.VERSION + ":rvm";
     private static final String GRID_TOKEN = "_";
