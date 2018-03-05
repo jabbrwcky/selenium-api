@@ -17,7 +17,7 @@ configurations {
 
 dependencies {
     compile 'org.influxdb:influxdb-java:1.2'
-    provided 'org.seleniumhq.selenium:selenium-server:3.1.0'
+    provided 'org.seleniumhq.selenium:selenium-server:3.8.1'
     compile 'org.json:json:20080701'
     testCompile 'org.testng:testng:6.8.8'
 }
@@ -36,6 +36,6 @@ jar {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
+    gradleVersion = '4.6'
     distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip";
 }
