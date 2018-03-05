@@ -25,6 +25,7 @@ import java.util.logging.Logger;
  * @author Jens Hausherr (jens.hausherr@xing.com)
  */
 public class Console extends RegistryBasedServlet {
+    static final long serialVersionUID = -1;
 
     private final Logger log = Logger.getLogger(getClass().getName());
     private String coreVersion;
