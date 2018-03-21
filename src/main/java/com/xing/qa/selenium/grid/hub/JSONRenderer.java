@@ -9,6 +9,5 @@ import org.json.JSONObject;
  * @author Jens Hausherr (jens.hausherr@xing.com)
  */
 public interface JSONRenderer {
-
   JSONObject render() throws JSONException;
 }

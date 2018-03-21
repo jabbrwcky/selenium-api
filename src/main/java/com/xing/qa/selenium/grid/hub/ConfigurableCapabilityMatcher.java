@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  */
 public class ConfigurableCapabilityMatcher implements CapabilityMatcher {
 
-    private static final Logger LOGGER = Logger.getLogger(getClass().getName());
+    private static final Logger LOGGER = Logger.getLogger(ConfigurableCapabilityMatcher.class.getName());
 
     private static final String DEFAULT_CAPABILITIES = CapabilityType.PLATFORM + ":platform," + CapabilityType.BROWSER_NAME + ":exact," + CapabilityType.VERSION + ":rvm";
     private static final String GRID_TOKEN = "_";

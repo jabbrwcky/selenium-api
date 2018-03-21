@@ -2,7 +2,7 @@ package com.xing.qa.selenium.grid.hub;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openqa.grid.internal.Registry;
+import org.openqa.grid.internal.GridRegistry;
 import org.openqa.grid.internal.RemoteProxy;
 import org.openqa.grid.web.Hub;
 import org.openqa.grid.web.servlet.RegistryBasedServlet;
@@ -34,7 +34,7 @@ public class Console extends RegistryBasedServlet {
         this(null);
     }
 
-    public Console(Registry registry) {
+    public Console(GridRegistry registry) {
         super(registry);
 
         coreVersion = new BuildInfo().getReleaseLabel();
@@ -117,7 +117,7 @@ public class Console extends RegistryBasedServlet {
             }
 
             status.put("version", coreVersion);
-            status.put("configuration", getRegistry().getConfiguration().toJson().getAsJsonObject().entrySet());
+            status.put("configuration", getRegistry().getHub().getConfiguration().toJson().getAsJsonObject().entrySet());
             status.put("host", h.getConfiguration().host);
             status.put("port", h.getConfiguration().port);
             status.put("registration_url", h.getRegistrationURL());

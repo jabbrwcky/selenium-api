@@ -9,13 +9,20 @@ import org.openqa.grid.common.SeleniumProtocol;
 import org.openqa.grid.internal.RemoteProxy;
 import org.openqa.grid.internal.TestSession;
 import org.openqa.grid.internal.TestSlot;
-import org.openqa.grid.web.servlet.beta.MiniCapability;
-import org.openqa.grid.web.servlet.beta.SlotsLines;
 import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.BrowserType;
+
+
+import java.io.InputStream;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 /**
  * Renderer that presents data on a WebProxy as JSON object.
@@ -150,3 +157,129 @@ public class WebProxyJsonRenderer implements JSONRenderer {
     }
 
 }
+
+class MiniCapability {
+    private String browser;
+    private String version;
+    private DesiredCapabilities capabilities;
+  
+    MiniCapability(TestSlot slot) {
+      DesiredCapabilities cap = new DesiredCapabilities(slot.getCapabilities());
+      browser = cap.getBrowserName();
+      version = cap.getVersion();
+      capabilities = cap;
+    }
+  
+    public String getVersion() {
+      return version;
+    }
+  
+    public String getIcon() {
+      return getConsoleIconPath(new DesiredCapabilities(capabilities));
+    }
+  
+    /**
+     * get the icon representing the browser for the grid. If the icon cannot be located, returns
+     * null.
+     *
+     * @param cap - Capability
+     * @return String with path to icon image file.  Can be <i>null</i> if no icon
+     *         file if available.
+     */
+    private String getConsoleIconPath(DesiredCapabilities cap) {
+      String name = consoleIconName(cap);
+      String path = "org/openqa/grid/images/";
+      InputStream in =
+          Thread.currentThread().getContextClassLoader()
+              .getResourceAsStream(path + name + ".png");
+      if (in == null) {
+        return null;
+      }
+      return "/grid/resources/" + path + name + ".png";
+    }
+  
+    private String consoleIconName(DesiredCapabilities cap) {
+      String browserString = cap.getBrowserName();
+      if (browserString == null || "".equals(browserString)) {
+        return "missingBrowserName";
+      }
+  
+      String ret = browserString;
+  
+      // Map browser environments to icon names.
+      if (browserString.contains("iexplore") || browserString.startsWith("*iehta")) {
+        ret = BrowserType.IE;
+      } else if (browserString.contains("firefox") || browserString.startsWith("*chrome")) {
+        if (cap.getVersion() != null && cap.getVersion().toLowerCase().equals("beta") ||
+            cap.getBrowserName().toLowerCase().contains("beta")) {
+          ret = "firefoxbeta";
+        } else if (cap.getVersion() != null && cap.getVersion().toLowerCase().equals("aurora") ||
+                   cap.getBrowserName().toLowerCase().contains("aurora")) {
+          ret = "aurora";
+        } else if (cap.getVersion() != null && cap.getVersion().toLowerCase().equals("nightly") ||
+                   cap.getBrowserName().toLowerCase().contains("nightly")) {
+          ret = "nightly";
+        } else {
+          ret = BrowserType.FIREFOX;
+        }
+  
+      } else if (browserString.startsWith("*safari")) {
+        ret = BrowserType.SAFARI;
+      } else if (browserString.startsWith("*googlechrome")) {
+        ret = BrowserType.CHROME;
+      } else if (browserString.startsWith("opera")) {
+        ret = BrowserType.OPERA;
+      } else if (browserString.toLowerCase().contains("edge")) {
+        ret = BrowserType.EDGE;
+      }
+  
+      return ret.replace(" ", "_");
+    }
+  
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((browser == null) ? 0 : browser.hashCode());
+      result = prime * result + ((version == null) ? 0 : version.hashCode());
+      return result;
+    }
+  
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      MiniCapability other = (MiniCapability) obj;
+      if (browser == null) {
+        if (other.browser != null) return false;
+      } else if (!browser.equals(other.browser)) return false;
+      if (version == null) {
+        if (other.version != null) return false;
+      } else if (!version.equals(other.version)) return false;
+      return true;
+    }
+  
+  
+  
+  }
+  
+
+class SlotsLines {
+    private Map<MiniCapability, List<TestSlot>> slots = new HashMap<>();
+  
+    public void add(TestSlot slot) {
+      MiniCapability c = new MiniCapability(slot);
+      List<TestSlot> l = slots.computeIfAbsent(c, k -> new ArrayList<>());
+      l.add(slot);
+    }
+  
+    public Set<MiniCapability> getLinesType() {
+      return slots.keySet();
+    }
+  
+    public List<TestSlot> getLine(MiniCapability cap) {
+      return slots.get(cap);
+    }
+  }
+  
