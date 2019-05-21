@@ -1,7 +1,5 @@
 package com.xing.qa.selenium.grid.hub;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,20 +7,12 @@ import org.openqa.grid.common.SeleniumProtocol;
 import org.openqa.grid.internal.RemoteProxy;
 import org.openqa.grid.internal.TestSession;
 import org.openqa.grid.internal.TestSlot;
+import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.BrowserType;
-
 
 import java.io.InputStream;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import java.util.*;
 
 /**
  * Renderer that presents data on a WebProxy as JSON object.
@@ -40,12 +30,14 @@ public class WebProxyJsonRenderer implements JSONRenderer {
     @Override
     public JSONObject render() throws JSONException {
         JSONObject json = new JSONObject();
-        JsonObject status = proxy.getStatus();
+        Map object = proxy.getProxyStatus();
+        Map value = (Map) object.get("value");
+        Map build = (Map) value.get("build");
+        Map java = (Map) value.get("java");
         json.put("class", proxy.getClass().getSimpleName());
 
         try {
-            json.put("version",
-                    status.getAsJsonObject("value").getAsJsonObject("build").getAsJsonPrimitive("version").getAsString());
+            json.put("version", build.get("version"));
         } catch (JSONException e) {
             json.put("version", "unknown");
             json.put("error", e.getMessage());
@@ -53,13 +45,8 @@ public class WebProxyJsonRenderer implements JSONRenderer {
             e.printStackTrace();
         }
 
-        Set<Map.Entry<String, JsonElement>> os = status.getAsJsonObject("value").getAsJsonObject("os").entrySet();
-        Map<String, String> osProperties = new HashMap<>();
-        for(Map.Entry<String, JsonElement> entry : os) {
-            osProperties.put(entry.getKey(), entry.getValue().getAsString());
-        }
-        json.put("os", osProperties);
-        json.put("java", status.getAsJsonObject("value").getAsJsonObject("java").getAsJsonPrimitive("version").getAsString());
+        json.put("os",  value.get("os"));
+        json.put("java", java.get("version"));
         json.put("configuration", proxy.getConfig());
 
         SlotsLines rcLines = new SlotsLines();
@@ -124,9 +111,11 @@ public class WebProxyJsonRenderer implements JSONRenderer {
         JSONObject result = new JSONObject();
 
         for (MiniCapability cap : lines.getLinesType()) {
-
+            if(lines.getLine(cap).isEmpty()) {
+                result.put("Nodes","isEmpty");
+            }
             for (TestSlot s : lines.getLine(cap)) {
-                String browserName = (String) s.getCapabilities().get(CapabilityType.BROWSER_NAME).toString().replaceFirst("\\*", "");
+                String browserName = s.getCapabilities().get(CapabilityType.BROWSER_NAME).toString().replaceAll("\\s+", "");
                 JSONObject browserObj;
 
                 if (result.has(browserName)) {
@@ -165,7 +154,7 @@ class MiniCapability {
   
     MiniCapability(TestSlot slot) {
       DesiredCapabilities cap = new DesiredCapabilities(slot.getCapabilities());
-      browser = cap.getBrowserName();
+      browser = cap.getBrowserName().replaceAll("\\s+","");
       version = cap.getVersion();
       capabilities = cap;
     }
@@ -228,7 +217,7 @@ class MiniCapability {
       } else if (browserString.startsWith("*googlechrome")) {
         ret = BrowserType.CHROME;
       } else if (browserString.startsWith("opera")) {
-        ret = BrowserType.OPERA;
+        ret = BrowserType.OPERA_BLINK;
       } else if (browserString.toLowerCase().contains("edge")) {
         ret = BrowserType.EDGE;
       }
@@ -263,7 +252,7 @@ class MiniCapability {
   
   
   }
-  
+
 
 class SlotsLines {
     private Map<MiniCapability, List<TestSlot>> slots = new HashMap<>();
