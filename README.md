@@ -1,6 +1,6 @@
 # selenium-api
 
-Additional Servlets and monitoring for Selenium Grid 2
+Additional Servlets and monitoring for Selenium Grid 3
 
 ## JSON console
 
@@ -11,6 +11,11 @@ regular console as JSON (and adds some extra infos).
 
 ```bash
 java -cp selenium-standalone<version>.jar:selenium-api.jar org.openqa.grid.selenium.GridLauncherV3 \
+-servlets com.xing.qa.selenium.grid.hub.Console -role hub
+```
+For windows users:
+```bash
+java -cp selenium-standalone<version>.jar;selenium-api.jar org.openqa.grid.selenium.GridLauncherV3 \
 -servlets com.xing.qa.selenium.grid.hub.Console -role hub
 ```
 
