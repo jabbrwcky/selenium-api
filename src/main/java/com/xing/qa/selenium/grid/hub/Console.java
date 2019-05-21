@@ -6,21 +6,22 @@ import org.openqa.grid.internal.GridRegistry;
 import org.openqa.grid.internal.RemoteProxy;
 import org.openqa.grid.web.Hub;
 import org.openqa.grid.web.servlet.RegistryBasedServlet;
+import org.openqa.selenium.BuildInfo;
 import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.internal.BuildInfo;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Console information nad more as JSON
+ * Console information and more as JSON
  *
  * @author Jens Hausherr (jens.hausherr@xing.com)
  */
@@ -41,7 +42,7 @@ public class Console extends RegistryBasedServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             if ("/requests".equals(req.getPathInfo())) {
                 sendJson(pendingRequests(), req, resp);
@@ -70,7 +71,7 @@ public class Console extends RegistryBasedServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         resp.setStatus(200);
-        Writer w = null;
+        Writer w;
         try {
             w = resp.getWriter();
             jo.write(w);
@@ -87,7 +88,7 @@ public class Console extends RegistryBasedServlet {
         List<Map<String,?>> desired;
 
         if (p > 0) {
-            desired = new ArrayList<Map<String, ?>>();
+            desired = new ArrayList<>();
             for (Capabilities c: getRegistry().getDesiredCapabilities()) {
                 desired.add(c.asMap());
             }
@@ -102,28 +103,28 @@ public class Console extends RegistryBasedServlet {
     }
 
     protected JSONObject status()
-            throws JSONException {
-            JSONObject status = new JSONObject();
+        throws JSONException {
+        JSONObject status = new JSONObject();
 
-            Hub h = getRegistry().getHub();
+        Hub h = getRegistry().getHub();
 
-            List<JSONObject> nodes = new ArrayList<JSONObject>();
+        List<JSONObject> nodes = new ArrayList<>();
 
-            for (RemoteProxy proxy : getRegistry().getAllProxies()) {
-                try {
-                    JSONRenderer beta = new WebProxyJsonRenderer(proxy);
-                    nodes.add(beta.render());
-                } catch (Exception e) {}
-            }
+        for (RemoteProxy proxy : getRegistry().getAllProxies()) {
+            try {
+                JSONRenderer beta = new WebProxyJsonRenderer(proxy);
+                nodes.add(beta.render());
+            } catch (Exception e) {}
+        }
 
-            status.put("version", coreVersion);
-            status.put("configuration", getRegistry().getHub().getConfiguration().toJson().getAsJsonObject().entrySet());
-            status.put("host", h.getConfiguration().host);
-            status.put("port", h.getConfiguration().port);
-            status.put("registration_url", h.getRegistrationURL());
-            status.put("nodes", nodes);
-            status.put("requests", pendingRequests());
+        status.put("version", coreVersion);
+        status.put("configuration", getRegistry().getHub().getConfiguration().toJson().entrySet());
+        status.put("host", h.getConfiguration().host);
+        status.put("port", h.getConfiguration().port);
+        status.put("registration_url", h.getRegistrationURL());
+        status.put("nodes", nodes);
+        status.put("requests", pendingRequests());
 
-            return status;
+        return status;
     }
 }
